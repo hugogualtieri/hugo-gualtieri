@@ -11,22 +11,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hugo-gualtieri.com/blog/reduire-couts-cloud-40-pourcent</loc>
+    <loc>https://hugo-gualtieri.com/blog/architecture-aws-s3-cloudfront-route53</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://hugo-gualtieri.com/blog/rag-production-pieges</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://hugo-gualtieri.com/blog/0-a-2k-side-projects</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://hugo-gualtieri.com/blog/investissement-automatise-2026</loc>
+    <loc>https://hugo-gualtieri.com/blog/passer-une-certification-en-informatique</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -10,160 +10,222 @@ export interface Article {
 
 export const articles: Article[] = [
   {
-    slug: "reduire-couts-cloud-40-pourcent",
-    title: "Comment j'ai réduit mes coûts cloud de 40% en 3 mois",
-    excerpt: "Un retour d'expérience concret sur l'optimisation FinOps de mes projets sur AWS et GCP.",
-    category: "DevOps",
-    date: "12 mars 2026",
+    slug: "architecture-aws-s3-cloudfront-route53",
+    title: "Architecture de mon blog hébergé sur AWS avec S3, CloudFront et Route 53",
+    excerpt: "Comment héberger un site web statique sur AWS avec S3, CloudFront et Route 53 ?",
+    category: "Cloud",
+    date: "14 juil 2025",
     readTime: "8 min",
-    content: `## Le constat initial
+    content: `## Introduction
 
-Quand j'ai fait l'audit de mes dépenses cloud en décembre 2025, le constat était brutal : **3 200€/mois** répartis entre AWS et GCP, avec une grosse partie de ressources sous-utilisées.
+Dans un précédent article, j'expliquais que je souhaitais me diriger vers un rôle d'architecte en informatique. Et pour y arriver, une des choses que j'ai commencé à faire c'est documenter toutes les architectures que je construis. Cela va non seulement me permettre de garder une trace de mes réalisations, mais aussi de partager mes connaissances et d'améliorer mes compétences.
 
-### Les quick wins
+Dans cet article, je vais vous présenter l'architecture de mon blog personnel, hébergé sur AWS avec S3, CloudFront et Route 53.
 
-La première étape a été d'identifier les ressources fantômes — ces instances EC2 oubliées, ces snapshots EBS qui s'accumulent, ces load balancers sans trafic.
+## Présentation du projet
 
-- **Instances réservées** : en passant de on-demand à reserved sur mes workloads stables, j'ai économisé 25% immédiatement
-- **Right-sizing** : la majorité de mes instances tournaient à 15% de CPU. En downsizant, j'ai récupéré 400€/mois
-- **Spot instances** : pour mes jobs de batch processing, les spots ont réduit le coût de 70%
+### Contexte et objectifs
 
-### L'automatisation FinOps
+L'objectif de ce projet était de créer un blog personnel simple, performant et peu coûteux. Je voulais donc une infrastructure qui réponde à plusieurs besoins:
 
-J'ai mis en place un pipeline automatisé qui :
-1. Analyse quotidiennement l'utilisation des ressources
-2. Génère des recommandations de right-sizing
-3. Coupe automatiquement les ressources de dev la nuit et le weekend
+1. **Simplicité** : La solution doit répondre aux besoins tout en restant le plus simple possible.
+2. **Performance** : Je voulais que les performances de mon blog soient bonnes et qu'il soit capable d'encaisser de la charge au besoin.
+3. **Efficience économique** : Pour un projet de ce type, qui n'a pas vocation à me rapporter de l'argent, je voulais une solution vraiment très peu coûteuse.
+4. **Automatisation** : Bien entendu, je ne voulais pas devoir faire des actions manuelles pour mettre à jour mon site. Donc il me fallait une solution automatisable facilement pour les mises à jour.
 
-### Résultats
+### Pourquoi ne pas choisir une solution grand public ?
 
-Après 3 mois d'optimisation progressive, je suis passé de **3 200€ à 1 920€/mois** — soit exactement 40% de réduction. Le plus satisfaisant ? La performance n'a pas bougé d'un iota.`,
+Il existe de nombreuses solutions grand public pour héberger un blog, comme Vercel, Netlify, etc... Cependant, j'ai choisi de ne pas utiliser ces solutions pour plusieurs raisons:
+
+1. **Apprentissage** : Même si j'ai déjà travaillé avec ces services sur AWS, c'est un moyen pour moi d'approfondir mes connaissances et de rester à jour dans un cas comme celui-ci, et dans d'autres cas, de pratiquer sur certains services que je n'avais jamais utilisé.
+2. **Pertinence** : Lorsque je travaille pour des clients, c'est quasiment tout le temps des grands comptes et ils ont recours à des cloud providers pour héberger leurs infrastructures. Continuer de construire des projets qui parleront à mes clients en termes d'infrastructure me donnera matière pour démontrer mes compétences lors d'entretiens.
+3. **Evolutivité** : Une solution personnalisée sur AWS me permet d'avoir un contrôle total sur l'architecture et également peut-être de la faire évoluer plus tard.
+
+## Présentation de l'architecture
+
+### Schéma de l'architecture
+
+*(Schéma d'architecture AWS — S3, CloudFront, Route 53, ACM)*
+
+### Description des différents composants
+
+#### Bucket S3
+
+J'ai utilisé un bucket S3 pour stocker les fichiers statiques de mon blog (Amazon S3 est un service de stockage d'objets).
+
+Pour configurer mon bucket S3 pour héberger mon site web statique, j'ai suivi les étapes suivantes:
+
+- Créer un bucket S3 avec un nom unique.
+- Laisser l'option 'Bloquer tous les accès publics' cochée.
+- Télécharger les fichiers statiques de mon blog dans le bucket (via un pipeline CI/CD).
+
+#### CloudFront
+
+J'ai utilisé CloudFront pour améliorer les performances de mon blog en distribuant le contenu via un réseau mondial de serveurs (Amazon CloudFront est un service de distribution de contenu (CDN)).
+
+Pour créer une distribution CloudFront et l'associer à mon bucket S3, j'ai suivi les étapes suivantes:
+
+- Créer une distribution CloudFront avec l'origine pointant vers mon bucket S3.
+- Configurer les paramètres de la distribution, comme les comportements de cache et les restrictions d'accès (restreindre l'accès au bucket seulement depuis la distribution CloudFront en créant une OAC (Origin Access Control) et en copiant la politique que vous allez ensuite coller dans S3 > *nom du bucket* > Autorisations > Stratégie de compartiment).
+- Attendre que la distribution soit déployée (cela peut prendre quelques minutes).
+
+CloudFront apporte plusieurs avantages à mon architecture:
+
+- Mise en cache: CloudFront met en cache le contenu de mon blog sur ses serveurs, réduisant ainsi la latence pour les utilisateurs finaux.
+- Réduction de la latence: Grâce à son réseau mondial de serveurs, CloudFront permet de servir le contenu à partir du serveur le plus proche de l'utilisateur.
+- Protection contre les attaques DDoS: CloudFront offre une protection intégrée contre les attaques DDoS, améliorant ainsi la sécurité de mon blog.
+
+#### Route 53
+
+J'ai utilisé Route 53 pour gérer le nom de domaine de mon blog et rediriger les requêtes vers ma distribution CloudFront (Amazon Route 53 est un service de gestion de noms de domaine et de DNS).
+
+Pour configurer Route 53, j'ai suivi les étapes suivantes (je possédais déjà mon nom de domaine via un autre service extérieur à AWS):
+
+- Créer une zone hébergée et configurer mon nom de domaine pour utiliser des serveurs de noms.
+- Créer un enregistrement DNS de type A pour mon nom de domaine, avec l'alias pointant vers ma distribution CloudFront.
+
+#### AWS Certificate Manager (ACM)
+
+J'ai utilisé ACM pour obtenir un certificat SSL/TLS et l'associer à ma distribution CloudFront. Cependant, même si j'ai bien utilisé le service ACM pour obtenir mon certificat, je l'ai fait directement via l'interface de CloudFront, sur ma distribution. J'ai suivi ces étapes:
+
+- Sur CloudFront, sur l'interface de ma distribution, j'ai ajouté deux noms de domaine dans la rubrique 'Autres noms de domaine' (hugo-gualtieri.com et www.hugo-gualtieri.com).
+- Ensuite on m'a demandé de sélectionner un certificat sauf que n'en ayant pas encore créé, il était proposé de créer le certificat. En cliquant sur le bouton de cette proposition, un certificat a été créé et également validé en ajoutant directement un enregistrement sur Route 53.
+- Attendre que la distribution soit déployée (cela peut prendre quelques minutes).
+
+## Avantages de cette architecture
+
+### Performances élevées
+
+Grâce à CloudFront, le contenu de mon blog est distribué via un réseau mondial de serveurs, réduisant ainsi la latence pour les utilisateurs finaux. De plus, la mise en cache du contenu permet d'améliorer les performances et de réduire la charge sur mon bucket S3.
+
+### Simplicité de la gestion et de la maintenance
+
+Route 53 et CloudFront sont des services qui ne requièrent aucune gestion et pour S3 très peu, avec une durabilité ~99.99999999999% et une disponibilité ~99.99%. Les mises à jour peuvent être facilement automatisées via un pipeline CI/CD, ce qui me permet de me concentrer sur la création de contenu pour mon blog.
+
+### Coûts réduits
+
+Comparé à une architecture dynamique, les coûts de stockage et de bande passante sont minimaux pour un site statique. De plus, CloudFront offre des tarifs compétitifs pour la distribution de contenu, ce qui me permet de garder les coûts de mon blog très bas.
+
+## Conclusion
+
+Dans cet article, j'ai présenté l'architecture de mon blog personnel, hébergé sur AWS avec S3, CloudFront et Route 53. Cette architecture offre plusieurs avantages, comme des performances élevées, une simplicité de gestion et de maintenance, et des coûts réduits.
+
+Si cette architecture est amenée à évoluer, j'en ferai un nouvel article pour détailler les évolutions, les nouveaux choix d'architectures, etc...`,
   },
   {
-    slug: "rag-production-pieges",
-    title: "RAG en production : les pièges que personne ne mentionne",
-    excerpt: "Après 6 mois à déployer du RAG en prod, voici les leçons que j'aurais aimé connaître avant.",
-    category: "IA",
-    date: "5 mars 2026",
-    readTime: "12 min",
-    content: `## Pourquoi le RAG semble simple (mais ne l'est pas)
-
-Tous les tutoriels montrent la même chose : on chunk des documents, on les vectorise, on fait une recherche sémantique, on passe le contexte au LLM. Simple, non ?
-
-En production, c'est une autre histoire.
-
-### Piège #1 : Le chunking naïf détruit le contexte
-
-Découper un document tous les 500 tokens semble raisonnable jusqu'à ce qu'un tableau soit coupé en deux, qu'un paragraphe perde sa référence, ou qu'une liste soit séparée de son introduction.
-
-**Ma solution** : un chunking sémantique qui respecte la structure du document — titres, paragraphes, tableaux sont des unités atomiques.
-
-### Piège #2 : La recherche sémantique ne suffit pas
-
-Le embedding search est bon pour les questions conceptuelles, mais terrible pour les recherches exactes (numéros de version, noms propres, dates).
-
-**Ma solution** : un système hybride keyword + semantic avec re-ranking. Le BM25 classique rattrape beaucoup de cas que le vectoriel rate.
-
-### Piège #3 : L'évaluation est un cauchemar
-
-Comment mesurer si votre RAG répond correctement ? Les métriques classiques (BLEU, ROUGE) sont inutiles ici.
-
-**Ma solution** : un framework d'éval custom avec :
-- Faithfulness : la réponse est-elle fidèle aux sources ?
-- Relevance : les chunks récupérés sont-ils pertinents ?
-- Coverage : la réponse couvre-t-elle la question complètement ?
-
-### Ce que j'aurais aimé savoir
-
-Le RAG n'est pas un projet "set and forget". C'est un système vivant qui nécessite un monitoring constant, des boucles de feedback, et une itération continue sur la qualité des données source.`,
-  },
-  {
-    slug: "0-a-2k-side-projects",
-    title: "De 0 à 2K€/mois avec des side-projects techniques",
-    excerpt: "Ma stratégie pour créer des revenus récurrents avec des micro-SaaS et de l'affiliation.",
-    category: "Business",
-    date: "22 fév 2026",
+    slug: "passer-une-certification-en-informatique",
+    title: "Passer une certification en informatique",
+    excerpt: "Comment se préparer pour passer une certification en informatique ? Je vous partage ma méthode pour me préparer et obtenir une certification.",
+    category: "Formation",
+    date: "11 juil 2025",
     readTime: "10 min",
-    content: `## La philosophie : small bets
+    content: `## Introduction
 
-Plutôt que de construire un gros SaaS pendant 12 mois sans revenus, j'ai opté pour la stratégie des "small bets" — plusieurs petits projets qui génèrent chacun quelques centaines d'euros.
+J'ai récemment passé deux certifications en informatique: HashiCorp Terraform Associate et AWS Certified Solutions Architect Associate 🎉
 
-### Mois 1-3 : L'affiliation technique
+Pour ça, j'ai bloqué quasiment 3 semaines pour m'y préparer et j'ai eu besoin d'un planning efficace qui me permettrait de passer ces certifications dans un temps réduit.
 
-J'ai commencé par ce qui demandait le moins d'investissement : du contenu technique avec des liens d'affiliation vers des outils que j'utilise vraiment.
+Et aujourd'hui, je vais vous partager ma méthode, comment je me suis organisé pour y arriver.
 
-- Articles comparatifs d'outils DevOps
-- Tutoriels avec liens vers des services cloud
-- Reviews honnêtes de produits SaaS
+## Pourquoi passer une certification ?
 
-**Résultat** : ~300€/mois après 3 mois de contenu régulier.
+Tout d'abord, rappelons pourquoi il est important de passer des certifications.
 
-### Mois 4-6 : Le premier micro-SaaS
+Dans mon cas, je commence à avoir quelques années d'expérience sur les sujets DevOps / Cloud et je souhaiterai évoluer vers un métier d'architecte tout en restant freelance. C'est pour cela que j'ai passé la certification AWS Certified Solutions Architect Associate et que je prévois de passer la Professional dans les prochains mois.
 
-Fort des insights récoltés via mes articles, j'ai identifié un pain point récurrent : le monitoring des coûts multi-cloud. J'ai construit un MVP en 3 semaines.
+Ces certifications vont venir en plus de mes expériences confirmer le fait que j'ai le niveau pour endosser un rôle d'architecte, en plus de montrer des compétences spécifiques sur des technologies ou des cloud providers (AWS dans cet exemple).
 
-- Landing page simple
-- Connexion API aux providers cloud
-- Dashboard de coûts avec alertes
+Les certifications peuvent vous permettre de monter en compétences sur un sujet, attester d'un certain niveau et renforcer votre crédibilité. Cependant, des projets personnels et encore plus professionnels sont très appréciés pour décrocher des jobs / missions en lien avec ces sujets.
 
-**Résultat** : 15 clients payants à 29€/mois = 435€/mois.
+## Choisir la bonne certification
 
-### Mois 7-12 : Diversification
+Avant de foncer sur la première certification venue, il faut se poser les bonnes questions:
 
-J'ai répliqué la formule avec d'autres niches, ajouté AdSense sur mes blogs, et lancé une newsletter sponsorisée.
+- Quelles compétences possédez-vous déjà ?
+- Quels sont vos objectifs à court/moyen terme ? (spécialisation, montée en compétences)
+- Quels sont les besoins les plus recherchés sur le marché ? (AWS, Azure, Kubernetes, Terraform, etc...)
+- Quel est mon niveau sur le sujet ? (Vous pouvez commencer par des niveaux 'Associate' sur AWS puis ensuite passer sur des certifications 'Professional')
 
-### La stack revenus actuelle
+Aussi, un passage sur LinkedIn et les offres d'emploi / missions peut vous donner une bonne idée des tendances.
 
-| Source | Montant mensuel |
-|--------|----------------|
-| Micro-SaaS (x2) | ~900€ |
-| Affiliation | ~650€ |
-| AdSense | ~350€ |
-| Sponsoring newsletter | ~200€ |
-| **Total** | **~2 100€** |`,
-  },
-  {
-    slug: "investissement-automatise-2026",
-    title: "Mon setup d'investissement automatisé en 2026",
-    excerpt: "DCA, ETF, crypto — comment j'automatise mes investissements pour y passer 10 min par mois.",
-    category: "Argent",
-    date: "15 fév 2026",
-    readTime: "6 min",
-    content: `## Le principe : automatiser pour ne pas y penser
+## Construire un planning
 
-Je suis convaincu que le meilleur investissement est celui qu'on oublie. Voici mon setup qui me prend littéralement 10 minutes par mois.
+Pour ça, il faut que vous ayez un objectif de date pour passer votre certification et également un état de votre niveau sur examen blanc de la certification.
 
-### ETF : le cœur du portefeuille (70%)
+Lors de la création de votre planning:
 
-Virements automatiques mensuels vers mon PEA et mon CTO :
+- Ne vous surchargez pas / Ne surestimez pas votre capacité de travail.
+- Lorsque vous estimez une ressource à lire / vidéo à regarder, prévoyez 2 à 3 fois plus de temps pour correctement prendre des notes et également pratiquer si besoin.
+- Prévoyez assez de temps pour correctement vous entraîner (passez des examens blancs).
+- Insérer des moments pour reréviser les sujets que vous avez vu quelques jours plus tôt pour ancrer ça encore plus dans votre mémoire.
 
-- **MSCI World** : 60% — diversification mondiale
-- **S&P 500** : 20% — surpondération US tech
-- **Emerging Markets** : 20% — exposition aux marchés émergents
+Pour la plupart des certifications, si vous avez un évènement inattendu qui vous ralentit dans votre préparation, vous pouvez jusqu'à 24 à 48h avant modifier votre créneau mais il est préférable de prévoir des imprévus possibles dans votre planning.
 
-Le DCA (Dollar Cost Averaging) mensuel lisse la volatilité. Je ne regarde même pas les cours.
+## Trouver les bonnes ressources pour se former
 
-### Crypto : la partie spéculative (20%)
+Le mieux est de multiplier les ressources pour être sûr d'avoir une formation complète:
 
-- **Bitcoin** : 60% de la poche crypto
-- **Ethereum** : 30%
-- **Altcoins sélectionnés** : 10%
+- Documentation officielle (AWS, Azure, Microsoft Learn...): ressources très complètes mais cela peut prendre énormément de temps de tout voir et toutes les informations ne sont pas utiles pour préparer la certification.
+- Formations en ligne (Udemy, Coursera, Tutorials Dojo, etc...): En général ces formations sont très pratiques et permettent de se préparer plus rapidement à la certification avec un contenu épuré.
+- Livres, guides PDF, et forums (Stack Overflow, Reddit): Je vous conseille le subreddit r/AWSCertifications sur lequel pas mal de gens postent leurs réussites et leurs échecs sur les différentes certifications mais également certains leurs méthodes pour se préparer. J'ai piqué quelques conseils là dedans qui m'ont permis d'encore mieux me préparer !
 
-Même principe de DCA hebdomadaire via un bot automatisé.
+## Pratiquer est indispensable
 
-### Cash & obligations (10%)
+Ici, cela dépend de si vous avez déjà travaillé avec le sujet de la certification et de votre niveau.
 
-Un fonds euros en assurance-vie pour la sécurité et la liquidité.
+Si vous avez besoin de revoir des cas pratiques ou carrément de vous former à la technologie dans l'objectif de passer la certification:
 
-### Les outils
+- Créez un lab local ou utilisez des sandboxes Cloud gratuits.
+- Reproduisez des scénarios réels (déploiement, monitoring, CI/CD...).
 
-- **Trade Republic** pour les ETF (plans d'épargne automatisés gratuits)
-- **Ledger** pour le stockage crypto
-- **Un spreadsheet maison** pour le suivi global
+Et que vous ayez besoin de pratiquer ou pas:
 
-### La règle d'or
+- Utilisez des flashcards (Quizlet par exemple) pour les notions théoriques.
+- Faites des examens blancs pour vous mettre en condition (Udemy, Tutorials dojo, etc...)
 
-Je ne touche à rien sauf une fois par an pour le rééquilibrage. Le reste du temps, les virements automatiques font le travail.`,
+## Prendre des notes
+
+Prenez des notes sur les différents sujets que vous voyez pour être capable de rapidement réviser un sujet et que vous allez également compléter au fur et à mesures: cours, exercices, examens blancs.
+Vous pouvez aussi vous faire des fiches sur les différences entre plusieurs services et également dans quels cas il est recommandé de les utiliser.
+
+## Astuces pour le J
+
+Ce conseil n'est pas vraiment pour le jour J mais plutôt pour la veille, préparez votre espace de travail pour la certification, déplacer des choses, dégager votre bureau, etc… pour ne pas avoir à le faire le jour de l'examen (peut-être que ça sera le matin tôt) et ne pas arriver stressé/pressé.
+
+C'est un conseil assez personnel mais je ne change jamais mes routines avant des évènements importants et ici ça peut prendre en compte la veille avant de m'endormir pour avoir un sommeil de qualité, le petit déjeuner, etc...
+
+Pendant l'examen:
+
+- Lisez bien chaque question.
+- Éliminez les mauvaises réponses.
+- Revenez plus tard sur les questions difficiles.
+
+Pas plus, pas moins, si vous vous êtes bien préparés, vous avez seulement à retenir ça pour ne pas faire d'erreurs d'inattention et vous sortir de cas où vous n'êtes pas sûr à 100%.
+
+Pendant l'examen gardez votre calme et restez concentré, vous verrez bien le résultat. Vous avez normalement fait ce qu'il fallait en amont.
+
+## Après l'examen: valorisation et suite
+
+Une fois que vous avez obtenu votre certification, vous pouvez vous féliciter et faire fructifier cette nouvelle certification en:
+
+- L'ajoutant à votre CV, dossier de compétences
+- L'ajoutant à vos profils LinkedIn, Credly et de plateformes de freelance (si vous êtes inscrits dessus)
+- Partageant un post sur LinkedIn pour le faire savoir à votre réseau
+
+Vous pouvez également réfléchir à la prochaine certification qui pourrait faire évoluer votre profil !
+
+## Conclusion
+
+Pour bien se préparer à une certification informatique:
+
+- Choisissez stratégiquement.
+- Planifiez bien votre préparation.
+- Formez-vous avec les bonnes ressources.
+- Pratiquez autant que possible (bacs à sable, examens blancs, etc...).
+- Faites vous des notes, fiches comparatives quand le cas s'y prête.
+- Anticipez le jour J.
+
+Chaque certification est un levier pour booster votre visibilité, renforcer votre crédibilité, et développer votre carrière.`,
   },
 ];
 
@@ -172,4 +234,6 @@ export const categoryColor: Record<string, string> = {
   IA: "text-revenue-stripe",
   Business: "text-revenue-affiliate",
   Argent: "text-revenue-other",
+  Cloud: "text-primary",
+  Formation: "text-revenue-stripe",
 };

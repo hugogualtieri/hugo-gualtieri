@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 import { articles, categoryColor } from "@/data/articles";
 
-const categories = ["Tous", "DevOps", "IA", "Business", "Argent"];
+const categories = ["Tous", "Cloud", "Formation"];
 
 interface BlogProps {
   fullPage?: boolean;
