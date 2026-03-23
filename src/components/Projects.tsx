@@ -46,6 +46,8 @@ const Projects = () => {
             <ScrollReveal key={project.title} delay={i * 70}>
               <a
                 href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group block p-6 rounded-xl bg-surface-elevated border hover:shadow-md transition-all duration-300"
               >
                 <div className="flex items-center justify-between mb-3">
