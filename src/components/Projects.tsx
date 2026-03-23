@@ -3,46 +3,18 @@ import ScrollReveal from "./ScrollReveal";
 
 const projects = [
   {
-    title: "CloudDeploy Pro",
-    desc: "Outil de déploiement automatisé multi-cloud avec Terraform et GitHub Actions.",
-    tags: ["Terraform", "AWS", "CI/CD"],
+    title: "Ma Municipalité",
+    desc: "Logiciel de mairie pour la gestion des salles municipales et du matériel communal. Réservation en ligne, paiements, planning.",
+    tags: ["Next.js", "TypeScript", "AWS", "Stripe"],
     status: "En production",
-    url: "#",
+    url: "https://ma-municipalite.fr",
   },
   {
-    title: "AI Content Pipeline",
-    desc: "Pipeline de génération de contenu SEO automatisé utilisant des LLMs et du RAG.",
-    tags: ["Python", "LLM", "RAG"],
-    status: "Beta",
-    url: "#",
-  },
-  {
-    title: "SaaS Monitoring Hub",
-    desc: "Dashboard de monitoring centralisé pour mes side-projects avec alertes en temps réel.",
-    tags: ["React", "Grafana", "Prometheus"],
-    status: "En développement",
-    url: "#",
-  },
-  {
-    title: "Affiliate Tracker",
-    desc: "Suivi des revenus d'affiliation multi-plateformes avec analytics intégrés.",
-    tags: ["Node.js", "Stripe", "Analytics"],
+    title: "OpenRando",
+    desc: "Application web de randonnée : import GPX, guidage GPS en temps réel, historique de sorties et partage communautaire de tracés.",
+    tags: ["Next.js", "TypeScript", "AWS", "GPX"],
     status: "En production",
-    url: "#",
-  },
-  {
-    title: "K8s Cost Optimizer",
-    desc: "Outil d'optimisation des coûts Kubernetes basé sur l'analyse de l'usage réel.",
-    tags: ["Kubernetes", "Go", "FinOps"],
-    status: "Side-project",
-    url: "#",
-  },
-  {
-    title: "Newsletter Autopilot",
-    desc: "Automatisation d'envoi de newsletters avec segmentation IA des lecteurs.",
-    tags: ["IA", "Email", "Automation"],
-    status: "Beta",
-    url: "#",
+    url: "https://openrando.com",
   },
 ];
 
@@ -69,7 +41,7 @@ const Projects = () => {
           </p>
         </ScrollReveal>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           {projects.map((project, i) => (
             <ScrollReveal key={project.title} delay={i * 70}>
               <a
