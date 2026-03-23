@@ -59,8 +59,6 @@ const Blog = ({ fullPage = false }: BlogProps) => {
             <ScrollReveal key={article.slug} delay={i * 70}>
               <Link
                 href={`/blog/${article.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 py-5 px-4 -mx-4 rounded-xl hover:bg-card transition-colors duration-200"
               >
                 <div className="flex-1 min-w-0">
@@ -91,8 +89,6 @@ const Blog = ({ fullPage = false }: BlogProps) => {
             <div className="mt-10">
               <Link
                 href="/blog"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
               >
                 Voir tous les articles <ArrowRight size={14} />
