@@ -2,7 +2,6 @@ import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Projects from "@/components/Projects";
 import Blog from "@/components/Blog";
-import RevenueDashboard from "@/components/RevenueDashboard";
 
 export default function Home() {
   return (
@@ -11,7 +10,6 @@ export default function Home() {
       <About />
       <Projects />
       <Blog />
-      <RevenueDashboard />
 
       <script
         type="application/ld+json"
